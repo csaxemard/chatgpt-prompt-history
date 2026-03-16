@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "ChatGPT Prompt History",
+  "version": "1.0",
+  "description": "Affiche un panneau avec l'historique des prompts sur chatgpt.com",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["https://chatgpt.com/c/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/c/*"],
+      "js": ["content.js"],
+      "css": ["panel.css"]
+    }
+  ]
+}
