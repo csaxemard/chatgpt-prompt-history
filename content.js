@@ -43,18 +43,39 @@ function updatePromptReferencesList() {
 }
 
 function initObserver() {
-    const chatContainer = document.querySelector('#thread .flex.flex-col.text-sm.pb-25');
+    // Déconnecte l'observer précédent s'il existe
+    if (observer) {
+        observer.disconnect();
+    }
+
+    const chatContainer = document.querySelector('#thread');
     if (!chatContainer) return;
 
-    const observer = new MutationObserver(updatePromptReferencesList);
+    observer = new MutationObserver(updatePromptReferencesList);
     observer.observe(chatContainer, {childList: true, subtree: true});
+}
+
+function checkForUrlChange() {
+    if (window.location.href !== currentUrl) {
+        currentUrl = window.location.href;
+        initObserver();
+        updatePromptReferencesList();
+    }
 }
 
 function init() {
     createPanel();
     updatePromptReferencesList();
     initObserver();
+
+    // Polling toutes les 5 secondes pour vérifier le changement d'URL
+    checkInterval = setInterval(checkForUrlChange, 5000);
 }
 
-// Delay pour attendre le chargement complet du DOM
-setTimeout(init, 2000);
+
+
+let observer; // Variable globale pour l'observer
+let checkInterval; // Pour le polling
+let currentUrl = window.location.href; // URL actuelle
+
+setTimeout(init, 2000);   // Delay pour attendre le chargement complet du DOM
