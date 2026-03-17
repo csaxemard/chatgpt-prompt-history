@@ -1,7 +1,14 @@
-function devLog(message, isVerbose = true) {
-    if (loggingMode === "dev" && isVerbose == verboseLogging) {
+function logVerbose(message) {
+    if (options.loggingMode === "verbose") {
         console.log(message);
     }
+}
+
+function loadOptions(callback) {
+    chrome.storage.sync.get(
+        { isEnabled: true, minPrompts: 5, loggingMode: "normal" },
+        callback
+    );
 }
 
 function createPanel() {
@@ -19,7 +26,7 @@ function createPanel() {
 }
 
 function updatePromptReferencesList() {
-    devLog("mutating")
+    logVerbose("CPH_ext : mutating")
     const mainPanel = document.getElementById("CPH_ext-main");
     const list = document.getElementById("CPH_ext-promptReferencesList");
     if (!list) return;
@@ -44,11 +51,13 @@ function updatePromptReferencesList() {
     mainPanel.style.height = mainPanel.getBoundingClientRect().height + "px";
     mainPanel.dataset.promptsNumber = promptNodes.length;
 
-    // Cache main si moins de 4 prompts
-    if (promptNodes.length > 4) {
+    // Cache main selon nb prompts
+    if (promptNodes.length >= options.minPrompts) {
+        mainPanel.style.display = "initial";
         mainPanel.style.opacity = 1;
     } else {
         mainPanel.style.opacity = 0;
+        setTimeout(() => mainPanel.style.display = "none", 400);
     }
 }
 
@@ -70,7 +79,7 @@ function checkForUrlChange() {
         currentUrl = window.location.href;
 
         if (window.location.href !== "https://chatgpt.com/") {
-            devLog(`url changed. Current : ${window.location.href}`)
+            logVerbose(`CPH_ext : url changed. Current : ${window.location.href}`)
             waitForThread(() => {
                 initObserver();
                 updatePromptReferencesList();
@@ -85,18 +94,19 @@ function init() {
     initObserver();
 
     checkInterval = setInterval(checkForUrlChange, 5000);
+    updateInterval = setInterval(() => { logVerbose("CPH_ext : Manual update every 10s"); updatePromptReferencesList() }, 10000);
 }
 
 function waitForThread(callback, maxAttempts = 10) {
     let attempts = 0;
     const check = () => {
         if (document.querySelector("#thread .flex.flex-col.text-sm.pb-25")) {
-            devLog("Chat element found")
+            logVerbose("CPH_ext : Chat element found")
             callback();
         } else if (attempts < maxAttempts) {
-            devLog(`Looking for chat element (attempt ${attempts})...`)
+            logVerbose(`CPH_ext : Looking for chat element (attempt ${attempts})...`)
             attempts++;
-            setTimeout(check, 1000); // Retry every 500ms
+            setTimeout(check, 1000); // Retry every seconds
         } else {
             console.log(`CHP_ext : Chat element not found after ${maxAttempts} seconds\nChat element selector : #thread .flex.flex-col.text-sm.pb-25`);
         }
@@ -108,17 +118,23 @@ function waitForThread(callback, maxAttempts = 10) {
 
 // --- Main ---
 
-const loggingMode = "prod"; // dev or prod
-const verboseLogging = true;
-
 let observer;
-let checkInterval; // Pour le polling
+let checkInterval;
+let updateInterval;
+let options;
 let currentUrl = window.location.href;
 
-if (window.location.href === "https://chatgpt.com/") {
-    devLog("CPH : window.location.href === https://chatgpt.com/")
-    init()
-} else {
-    devLog("CPH : window.location.href !== https://chatgpt.com/")
-    waitForThread(init);
-}
+loadOptions((data) => {
+    options = data;
+    console.log("CPH_ext : Options loaded :", options)
+
+    if (options.isEnabled) {
+        if (window.location.href === "https://chatgpt.com/") {
+            logVerbose("CPH_ext : Starting at Home url")
+            init()
+        } else {
+            logVerbose("CPH_ext : Starting at conversation url")
+            waitForThread(init);
+        }
+    }
+});

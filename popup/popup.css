@@ -1,0 +1,20 @@
+body {
+    width: 220px;
+    padding: 10px;
+    font-family: sans-serif;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    .isEnabled-container {
+        display: flex;
+    }
+}

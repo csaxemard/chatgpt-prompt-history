@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Settings</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./popup.css">
+</head>
+
+<body>
+    <div class="options">
+        <div class="isEnabled-container">
+            <label>Activé<input type="radio" name="isEnabled" value="true"></label>
+            <label><input type="radio" name="isEnabled" value="false">Désactivé</label>
+        </div>
+
+        <label title="Nombre minimal de prompts requis pour afficher le panneau (min 1)">
+            Min prompts :
+            <input type="number" id="minPrompts" min="1" />
+        </label>
+
+        <label title="Type de messages affichés dans la console">
+            LoggingMode :
+            <select id="loggingMode">
+                <option value="normal">Normal</option>
+                <option value="verbose">Verbose</option>
+            </select>
+        </label>
+    </div>
+
+    <div class="resultMessage">
+        <p>Les paramètres sont sauvegardés automatiquement.</p>
+        <p>Pensez à recharger la page.</p>
+    </div>
+
+    <script src="./popup.js"></script>
+</body>
+
+</html>
